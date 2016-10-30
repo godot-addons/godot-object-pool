@@ -39,13 +39,9 @@ func _init_pool():
 	if scene == null:
 		return
 
-	# We need to get the number
-	var next_increment = _dead_pool.size() + _alive_pool.size()
-
 	for i in range(size):
-		next_increment += 1
 		var s = scene.instance()
-		s.set_name(prefix + "_" + str(next_increment))
+		s.set_name(prefix + "_" + str(i))
 		s.connect("killed", self, "_on_killed")
 		_dead_pool[s.get_name()] = s
 
