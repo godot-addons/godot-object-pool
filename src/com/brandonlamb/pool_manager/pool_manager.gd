@@ -47,7 +47,7 @@ func _init_pool():
 
 func get_prefix(): return prefix
 func get_size(): return size
-func get_scene():	return scene
+func get_scene(): return scene
 func get_alive_size(): return _alive_pool.size()
 func get_dead_size(): return _dead_pool.size()
 
