@@ -64,6 +64,7 @@ func get_first_dead():
 
 	return null
 
+# Get the first alive object. Does not affect / change the object's dead value
 func get_first_alive():
 	for i in _alive_pool.keys():
 		var o = _alive_pool[i]
