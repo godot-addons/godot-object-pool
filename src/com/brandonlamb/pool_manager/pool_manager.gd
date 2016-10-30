@@ -45,59 +45,69 @@ func _init_pool():
 		s.connect("killed", self, "_on_killed")
 		_dead_pool[s.get_name()] = s
 
-func get_prefix(): return prefix
-func get_size(): return size
-func get_scene(): return scene
-func get_alive_size(): return _alive_pool.size()
-func get_dead_size(): return _dead_pool.size()
+func get_prefix():
+	return prefix
+
+func get_size():
+	return size
+
+func get_scene():
+	return scene
+
+func get_alive_size():
+	return _alive_pool.size()
+
+func get_dead_size():
+	return _dead_pool.size()
 
 # Get the first dead object and make it alive, adding the object to the alive pool and removing from dead pool
 func get_first_dead():
-	for i in _dead_pool.keys():
-		var o = _dead_pool[i]
-		if o.dead:
-			var n = o.get_name()
-			_alive_pool[n] = o
-			_dead_pool.erase(n)
-			o.dead = false
-			return o
+	if _dead_pool.size() > 0:
+		var o = _dead_pool.values()[0]
+		var n = o.get_name()
+		_alive_pool[n] = o
+		_dead_pool.erase(n)
+		o.dead = false
+		o.set_pause_mode(0)
+		return o
 
 	return null
 
 # Get the first alive object. Does not affect / change the object's dead value
 func get_first_alive():
-	for i in _alive_pool.keys():
-		var o = _alive_pool[i]
-		if !o.dead: return o
+	if _alive_pool.size() > 0:
+		return _alive_pool.values()[0]
 
 	return null
 
 # Convenience method to kill all ALIVE objects managed by the pool manager
-func kill_all(): for i in _alive_pool.keys(): _alive_pool[i].kill()
+func kill_all():
+	for i in _alive_pool.values():
+		i.kill()
 
 # Attach all objects managed by the pool manager to the node passed
 func add_to_node(node):
-	for i in _alive_pool.keys():
-		node.add_child(_alive_pool[i])
+	for i in _alive_pool.values():
+		node.add_child(i)
 
-	for i in _dead_pool.keys():
-		node.add_child(_dead_pool[i])
+	for i in _dead_pool.values():
+		node.add_child(i)
 
 # Convenience method to show all objects managed by the pool manager
 func show():
-	for i in _alive_pool.keys():
-		_alive_pool[i].show()
+	for i in _alive_pool.values():
+		i.show()
 
-	for i in _dead_pool.keys():
-		_dead_pool[i].show()
+	for i in _dead_pool.values():
+		i.show()
 
 # Convenience method to hide all objects managed by the pool manager
 func hide():
-	for i in _alive_pool.keys():
-		_alive_pool[i].hide()
+	for i in _alive_pool.values():
+		i.hide()
 
-	for i in _dead_pool.keys():
-		_dead_pool[i].hide()
+	for i in _dead_pool.values():
+		i.hide()
 
 # Event that all objects should emit so that the pool manager can manage dead/alive pools
 func _on_killed(target):
@@ -109,5 +119,7 @@ func _on_killed(target):
 
 	# Add the killed object to the dead pool, now available for use
 	_dead_pool[name] = target
+
+	target.set_pause_mode(1)
 
 	emit_signal("killed", target)
