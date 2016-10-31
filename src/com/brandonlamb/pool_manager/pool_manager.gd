@@ -25,6 +25,12 @@ var _alive_pool = {}
 # Pool of "dead" objects currently available for use
 var _dead_pool = {}
 
+# Hold a cached reference to the next dead object
+var _next_dead
+
+# Hold a cached reference to the next alive object
+var _next_alive
+
 # Constructor accepting pool size, prefix and scene
 func _init(size_, prefix_, scene_):
 	size = int(size_)
@@ -45,6 +51,8 @@ func _init_pool():
 		s.connect("killed", self, "_on_killed")
 		_dead_pool[s.get_name()] = s
 
+	_next_dead = _dead_pool.values()[0]
+
 func get_prefix():
 	return prefix
 
@@ -62,19 +70,26 @@ func get_dead_size():
 
 # Get the first dead object and make it alive, adding the object to the alive pool and removing from dead pool
 func get_first_dead():
+	if _next_dead != null:
+		var o = _next_dead
+		_activate_dead(o)
+		_next_dead = null
+		return o		
+
 	if _dead_pool.size() > 0:
 		var o = _dead_pool.values()[0]
-		var n = o.get_name()
-		_alive_pool[n] = o
-		_dead_pool.erase(n)
-		o.dead = false
-		o.set_pause_mode(0)
+		_activate_dead(o)
 		return o
 
 	return null
 
 # Get the first alive object. Does not affect / change the object's dead value
 func get_first_alive():
+	if _next_alive:
+		var o = _next_alive
+		_next_alive = null
+		return o
+
 	if _alive_pool.size() > 0:
 		return _alive_pool.values()[0]
 
@@ -109,6 +124,16 @@ func hide():
 	for i in _dead_pool.values():
 		i.hide()
 
+# Active the object (presumably dead)
+func _activate_dead(o):
+	if !o.dead: return
+
+	var n = o.get_name()
+	_alive_pool[n] = o
+	_dead_pool.erase(n)
+	o.dead = false
+	o.set_pause_mode(0)
+
 # Event that all objects should emit so that the pool manager can manage dead/alive pools
 func _on_killed(target):
 	# Get the name of the target object that was killed
@@ -121,5 +146,8 @@ func _on_killed(target):
 	_dead_pool[name] = target
 
 	target.set_pause_mode(1)
+
+	# Cache as next dead object
+	if _next_dead == null: _next_dead = target
 
 	emit_signal("killed", target)
