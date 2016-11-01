@@ -1,13 +1,13 @@
 # godot-pool-manager
 
-An object pool manager for Godot.
+An object pool for Godot.
 
 # Usage example:
 
 PlayerController.gd
 
 ```gdscript
-const PoolManager = preload("res://com/brandonlamb/pool_manager.gd")
+const Pool = preload("res://com/brandonlamb/pool/pool.gd")
 const GreenBullet = preload("res://com/example/bullets/green_bullet.tscn")
 
 const BULLET_POOL_SIZE = 60
