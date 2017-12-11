@@ -1,4 +1,4 @@
-# godot-pool-manager
+# godot-object pool
 
 An object pool for Godot.
 
@@ -21,7 +21,7 @@ func _ready():
 	# Attach pool of objects to the bullets node
 	pool.add_to_node(bullets)
 
-	# Attach the "on_pool_killed" method to the pool manager's "killed" signal
+	# Attach the "on_pool_killed" method to the pool's "killed" signal
 	pool.connect("killed", self, "_on_pool_killed")
 
 	set_process_input(true)
