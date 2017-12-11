@@ -1,4 +1,4 @@
-# godot-pool-manager
+# godot-object pool
 
 An object pool for Godot.
 
@@ -7,7 +7,7 @@ An object pool for Godot.
 PlayerController.gd
 
 ```gdscript
-const Pool = preload("res://com/brandonlamb/pool/pool.gd")
+const Pool = preload("res://addons/godot-object-pool/pool.gd")
 const GreenBullet = preload("res://com/example/bullets/green_bullet.tscn")
 
 const BULLET_POOL_SIZE = 60
@@ -21,7 +21,7 @@ func _ready():
 	# Attach pool of objects to the bullets node
 	pool.add_to_node(bullets)
 
-	# Attach the "on_pool_killed" method to the pool manager's "killed" signal
+	# Attach the "on_pool_killed" method to the pool's "killed" signal
 	pool.connect("killed", self, "_on_pool_killed")
 
 	set_process_input(true)
