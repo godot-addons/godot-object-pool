@@ -7,7 +7,7 @@ An object pool for Godot.
 PlayerController.gd
 
 ```gdscript
-const Pool = preload("res://com/brandonlamb/pool/pool.gd")
+const Pool = preload("res://addons/godot-object-pool/pool.gd")
 const GreenBullet = preload("res://com/example/bullets/green_bullet.tscn")
 
 const BULLET_POOL_SIZE = 60

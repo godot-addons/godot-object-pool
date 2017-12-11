@@ -1,13 +1,13 @@
 #
-# The design/intent of this pool manager is to be as immutable as possible from the outside.
+# The design/intent of this object pool is to be as immutable as possible from the outside.
 # With this in mind, I've attempted to not expose many internal to keep things as simple as possible,
 # knowing that nothing actually prevents you from modifying the object.
 #
 # See README.md for example usage
 #
 
-# Signal emitted when an object managed by the pool manager is "killed".
-# This is called after the pool manager has handled the killed signal from the object.
+# Signal emitted when an object managed by the pool is "killed".
+# This is called after the pool has handled the killed signal from the object.
 signal killed(target)
 
 # Prefix to use when adding objects to the scene (becomes "undefined_1, undefined_2, etc")
@@ -87,12 +87,12 @@ func get_first_alive():
 
 	return null
 
-# Convenience method to kill all ALIVE objects managed by the pool manager
+# Convenience method to kill all ALIVE objects managed by the pool
 func kill_all():
 	for i in alive.values():
 		i.kill()
 
-# Attach all objects managed by the pool manager to the node passed
+# Attach all objects managed by the pool to the node passed
 func add_to_node(node):
 	for i in alive.values():
 		node.add_child(i)
@@ -100,7 +100,7 @@ func add_to_node(node):
 	for i in dead:
 		node.add_child(i)
 
-# Convenience method to show all objects managed by the pool manager
+# Convenience method to show all objects managed by the pool
 func show():
 	for i in alive.values():
 		i.show()
@@ -108,7 +108,7 @@ func show():
 	for i in dead:
 		i.show()
 
-# Convenience method to hide all objects managed by the pool manager
+# Convenience method to hide all objects managed by the pool
 func hide():
 	for i in alive.values():
 		i.hide()
@@ -116,7 +116,7 @@ func hide():
 	for i in dead:
 		i.hide()
 
-# Event that all objects should emit so that the pool manager can manage dead/alive pools
+# Event that all objects should emit so that the pool can manage dead/alive pools
 func _on_killed(target):
 	# Get the name of the target object that was killed
 	var name = target.get_name()
