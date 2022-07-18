@@ -11,20 +11,20 @@
 signal killed(target)
 
 # Prefix to use when adding objects to the scene (becomes "undefined_1, undefined_2, etc")
-var prefix setget no_access, get_prefix
+var prefix setget , get_prefix
 
 # Pool size on initialization
-var size setget no_access, get_size
+var size setget , get_size
 
 # Preloaded scene resource
-var scene setget no_access, get_scene
+var scene setget , get_scene
 
 # Dictionary of "alive" objects currently in-use.
 # Using a dictionary for fast lookup/deletion
-var alive = {} setget no_access, no_access
+var alive = {} 
 
 # Array of "dead" objects currently available for use
-var dead = [] setget no_access, no_access
+var dead = []
 
 # Constructor accepting pool size, prefix and scene
 func _init(size_, prefix_, scene_):
@@ -45,9 +45,6 @@ func init():
 		s.set_name(prefix + "_" + str(i))
 		s.connect("killed", self, "_on_killed")
 		dead.push_back(s)
-
-func no_access():
-	return
 
 func get_prefix():
 	return prefix
