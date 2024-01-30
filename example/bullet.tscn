@@ -1,0 +1,24 @@
+[gd_scene load_steps=4 format=3 uid="uid://cw1rbf7kgh1mx"]
+
+[ext_resource type="Script" path="res://example/bullet.gd" id="1_i8ei0"]
+
+[sub_resource type="PlaceholderTexture2D" id="PlaceholderTexture2D_6f7bs"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_lrbxf"]
+radius = 1.0
+
+[node name="Bullet" type="Area2D"]
+collision_layer = 2
+collision_mask = 2
+script = ExtResource("1_i8ei0")
+metadata/_edit_group_ = true
+
+[node name="Jacket" type="Sprite2D" parent="."]
+scale = Vector2(2, 2)
+texture = SubResource("PlaceholderTexture2D_6f7bs")
+
+[node name="HurtyBit" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_lrbxf")
+
+[node name="DropTimer" type="Timer" parent="."]
+one_shot = true
