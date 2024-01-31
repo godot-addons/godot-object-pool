@@ -1,38 +1,49 @@
 # godot-object pool
 
-An object pool for Godot.
+An object pool for Godot 4.
+
+Object pooling in Godot reduces lag by reusing objects instead of constantly
+creating and deleting them. It's great for games with lots of temporary objects
+like bullets or enemies. You avoid the performance hit from frequent memory
+allocation, making your game run smoother.
+
+The pooled objects are initially hidden and their processing is disabled. 
+When they are popped back to the game, they are made visible and their position
+is reset. When they are hidden, they return to the pool. Handy.
 
 # Usage example:
 
-PlayerController.gd
-
 ```gdscript
 const Pool = preload("res://addons/godot-object-pool/pool.gd")
-const GreenBullet = preload("res://com/example/bullets/green_bullet.tscn")
+const Bullet = preload("res://example/bullet.tscn")
 
 const BULLET_POOL_SIZE = 60
 const BULLET_POOL_PREFIX = "bullet"
 
-onready var bullets = get_node("bullets")
-onready var player = get_node("player")
-onready var pool = Pool.new(BULLET_POOL_SIZE, BULLET_POOL_PREFIX, GreenBullet)
+@onready var pool = Pool.new(BULLET_POOL_SIZE, BULLET_POOL_PREFIX, Bullet)
 
 func _ready():
-	# Attach pool of objects to the bullets node
-	pool.add_to_node(bullets)
+	# Attach pooled objects to the game as children of the root node.
+	pool.add_to_node(self)
+	
+	# Called whenever bullet returns to the pool.
+	pool.restock.connect(_on_pool_restock)
+	
+	# Print initial status of the pool.
+	_on_pool_restock()
 
-	# Attach the "on_pool_killed" method to the pool's "killed" signal
-	pool.connect("killed", self, "_on_pool_killed")
+func _unhandled_input(event):
+	if event is InputEventMouseButton and event.pressed and\
+	   event.button_index == MOUSE_BUTTON_LEFT:
+			# Take a bullet from the bool and give it to the player to shoot.
+			$Player.shoot(pool.pop_first_dead(), event.position)
+			
+			# After some time the bullet is hidden and it returns to the pool.
+			#  (see bullet.gd) for details.
 
-	set_process_input(true)
-
-func _input(event):
-	if event.is_action_pressed("ui_select"):
-		var bullet = pool.get_first_dead()
-		if bullet: bullet.shoot(player.get_node("weapon_position"), player)
-
-func _on_pool_killed(target):
-	target.hide()
-	print("Currently %d objects alive in pool" % pool.get_alive_count())
-	print("Currently %d objects dead in pool" % pool.get_dead_count())
+func _on_pool_restock():
+	print("Currently %d objects alive in the pool" % pool.get_alive_count())
+	print("Currently %d objects dead in the pool" % pool.get_dead_count())
 ```
+
+See the complete example for more details.

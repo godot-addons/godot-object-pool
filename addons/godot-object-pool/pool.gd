@@ -1,129 +1,104 @@
 #
 # The design/intent of this object pool is to be as immutable as possible from the outside.
-# With this in mind, I've attempted to not expose many internal to keep things as simple as possible,
-# knowing that nothing actually prevents you from modifying the object.
+# With this in mind, an attempt was made to not expose internals and make it as simple as possible.
+# Nothing prevents you from modifying the pooled objects. Only their visibility and their `hidden`
+# signaling affect the pool.
 #
-# See README.md for example usage
+# See README.md for example usage.
+# 
 #
 
-# Signal emitted when an object managed by the pool is "killed".
-# This is called after the pool has handled the killed signal from the object.
-signal killed(target)
+signal restock(object)
 
 # Prefix to use when adding objects to the scene (becomes "undefined_1, undefined_2, etc")
-var prefix setget , get_prefix
+var prefix: get = get_prefix
 
 # Pool size on initialization
-var size setget , get_size
+var size: get = get_size
 
-# Preloaded scene resource
-var scene setget , get_scene
+# Preloaded scene resource to instantiate into objects and pool
+var template: get = get_template
 
 # Dictionary of "alive" objects currently in-use.
 # Using a dictionary for fast lookup/deletion
-var alive = {} 
+var _alive = {} 
 
 # Array of "dead" objects currently available for use
-var dead = []
+var _dead = []
 
 # Constructor accepting pool size, prefix and scene
-func _init(size_, prefix_, scene_):
+# Expands the total pool size by the number of requested objects.
+# For example, if passed 2, we will instantiate 2 new objects and add them 
+# to the dead pool 👽.
+func _init(size_, prefix_, template_):
 	size = int(size_)
 	prefix = str(prefix_)
-	scene = scene_
-	init()
+	template = template_
 
-# Expand the total pool size by the number of size objects.
-# For example, if passed 2, we will instantiate 2 new objects and add to the dead pool.
-func init():
-	# If scene has not been set, just return
-	if scene == null:
+	if template == null:
 		return
 
 	for i in range(size):
-		var s = scene.instance()
-		s.set_name(prefix + "_" + str(i))
-		s.connect("killed", self, "_on_killed")
-		dead.push_back(s)
+		var o = template.instantiate()
+		o.set_name(prefix + "_" + str(i))
+		o.visible = false
+		o.set_process_mode(4) # 4 = PROCESS_MODE_DISABLED
+		o.hidden.connect(self._on_restock.bind(o))
+		_dead.push_back(o)
 
 func get_prefix():
 	return prefix
-
 func get_size():
 	return size
-
-func get_scene():
-	return scene
-
-func get_alive_size():
-	return alive.size()
-
-func get_dead_size():
-	return dead.size()
+func get_template():
+	return template
+func get_alive_count():
+	return _alive.size()
+func get_dead_count():
+	return _dead.size()
 
 # Get the first dead object and make it alive, adding the object to the alive pool and removing from dead pool
-func get_first_dead():
-	var ds = dead.size()
-	if ds > 0:
-		var o = dead[ds - 1]
-		if !o.dead: return null
-
-		var n = o.get_name()
-		alive[n] = o
-		dead.pop_back()
-		o.dead = false
-		o.set_pause_mode(0)
-		return o
-
-	return null
+func pop_first_dead():
+	if _dead.is_empty():
+		return null
+	
+	var o = _dead.pop_back()
+	var n = o.get_name()
+	_alive[n] = o
+	# Turn its processing on and make it visible
+	o.set_process_mode(0) # 0 = PROCESS_MODE_INHERIT
+	o.visible = true
+	return o
 
 # Get the first alive object. Does not affect / change the object's dead value
 func get_first_alive():
-	if alive.size() > 0:
-		return alive.values()[0]
+	if _alive.is_empty():
+		return null
+	return _alive.values()[0]
 
-	return null
-
-# Convenience method to kill all ALIVE objects managed by the pool
-func kill_all():
-	for i in alive.values():
-		i.kill()
+# Hide all ALIVE objects and, hence, return them to the dead pool
+func hide_all_alive():
+	for a in _alive.values():
+		a.visible = false # Calls _on_restock, returns to dead
 
 # Attach all objects managed by the pool to the node passed
 func add_to_node(node):
-	for i in alive.values():
-		node.add_child(i)
+	for a in _alive.values():
+		node.add_child(a)
+	for o in _dead:
+		node.add_child(o)
 
-	for i in dead:
-		node.add_child(i)
-
-# Convenience method to show all objects managed by the pool
-func show():
-	for i in alive.values():
-		i.show()
-
-	for i in dead:
-		i.show()
-
-# Convenience method to hide all objects managed by the pool
-func hide():
-	for i in alive.values():
-		i.hide()
-
-	for i in dead:
-		i.hide()
-
-# Event that all objects should emit so that the pool can manage dead/alive pools
-func _on_killed(target):
-	# Get the name of the target object that was killed
-	var name = target.get_name()
-
+# Hiding a pool managed object calls this 
+func _on_restock(pooled_object):
 	# Remove the killed object from the alive pool
-	alive.erase(name)
+	var n = pooled_object.get_name()
+	_alive.erase(n)
 
 	# Add the killed object to the dead pool, now available for use
-	dead.push_back(target)
-
-	target.set_pause_mode(1)
-
-	emit_signal("killed", target)
+	_dead.push_back(pooled_object)
+	
+	# Disable it to save those precious, precious CPU cycles
+	pooled_object.set_process_mode(4) # 4 = PROCESS_MODE_DISABLE
+	
+	# Signal those that are interested of restock events
+	restock.emit(pooled_object)

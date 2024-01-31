@@ -1,0 +1,27 @@
+[gd_scene load_steps=5 format=3 uid="uid://dnjfeodh2t1qh"]
+
+[ext_resource type="Script" path="res://example/player.gd" id="1_1f5k6"]
+[ext_resource type="Script" path="res://example/example.gd" id="1_38il6"]
+
+[sub_resource type="PlaceholderTexture2D" id="PlaceholderTexture2D_3tk14"]
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_k3b7f"]
+height = 62.0
+
+[node name="World" type="Node2D"]
+script = ExtResource("1_38il6")
+
+[node name="Player" type="Area2D" parent="."]
+position = Vector2(605, 314)
+script = ExtResource("1_1f5k6")
+metadata/_edit_group_ = true
+
+[node name="Skin" type="Sprite2D" parent="Player"]
+position = Vector2(0, 1.90735e-06)
+scale = Vector2(18.049, 60)
+texture = SubResource("PlaceholderTexture2D_3tk14")
+
+[node name="Body" type="CollisionShape2D" parent="Player"]
+shape = SubResource("CapsuleShape2D_k3b7f")
+
+[node name="Bullets" type="Node" parent="."]
