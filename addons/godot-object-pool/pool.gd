@@ -43,7 +43,7 @@ func _init(size_, prefix_, template_):
 		o.set_name(prefix + "_" + str(i))
 		o.visible = false
 		o.set_process_mode(4) # 4 = PROCESS_MODE_DISABLED
-		o.hidden.connect(self._on_hidden.bind(o))
+		o.hidden.connect(self._on_restock.bind(o))
 		_dead.push_back(o)
 
 func get_prefix():
@@ -68,7 +68,6 @@ func pop_first_dead():
 	# Turn its processing on and make it visible
 	o.set_process_mode(0) # 0 = PROCESS_MODE_INHERIT
 	o.visible = true
-	o.position = Vector2.ZERO
 	return o
 
 # Get the first alive object. Does not affect / change the object's dead value
@@ -80,7 +79,7 @@ func get_first_alive():
 # Hide all ALIVE objects and, hence, return them to the dead pool
 func hide_all_alive():
 	for a in _alive.values():
-		a.visible = false # Calls _on_hidden, returns to dead
+		a.visible = false # Calls _on_restock, returns to dead
 
 # Attach all objects managed by the pool to the node passed
 func add_to_node(node):
@@ -90,7 +89,7 @@ func add_to_node(node):
 		node.add_child(o)
 
 # Hiding a pool managed object calls this 
-func _on_hidden(pooled_object):
+func _on_restock(pooled_object):
 	# Remove the killed object from the alive pool
 	var n = pooled_object.get_name()
 	_alive.erase(n)
